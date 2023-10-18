@@ -8,10 +8,19 @@ server.on('error', (err) => {
   server.close();
 });
 
-server.on('message', (msg, rinfo) => {
-  console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
-  server.send(msg, rinfo.port, rinfo.address, (err) => {
-    console.log(`Message sent to ${rinfo.address}:${rinfo.port}`)
+server.on('message', (msg, sender) => {
+  var datetime = (new Date()).getTime();
+  var clientToServerPing = datetime - parseInt(msg);
+
+  var jason = {
+    "clientToServerPing":clientToServerPing,
+    "serverdatetime":datetime};
+  // console.log(`clientToServerPing: ${clientToServerPing}`);
+
+  // console.log(`datetime: ${datetime}`);
+  // console.log(`server got: ${msg} from ${sender.address}:${sender.port}`);
+  server.send(JSON.stringify(jason), sender.port, sender.address, (err) => {
+    console.log(`Message sent to ${sender.address}:${sender.port}`)
   })
 });
 
