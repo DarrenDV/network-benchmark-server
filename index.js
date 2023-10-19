@@ -1,92 +1,90 @@
 console.log('server starting....');
 const dgram = require('node:dgram');
 const server = dgram.createSocket('udp4');
+const worker = require('worker_threads');
 
-var lastPacketID = 0;
+var oldTestID;
+var currentTestID;
+
+
+var isSendingPacketsForTest = false;
+
+var C2Sarray = [];
+
+
+
+
 
 server.on('error', (err) => {
   console.error(`server error:\n${err.stack}`);
   server.close();
 });
 
+
+
+
+
+
+
+
+
 server.on('message', (msg, sender) => {
-
   var receivedPacket = JSON.parse(msg);
-
-  var clientdatetime = receivedPacket.clientDatetime;
+  
 
   var datetime = (new Date()).getTime();
-  var clientToServerPing = datetime - clientdatetime;
+  var C2S = datetime - receivedPacket.clientDatetime;
+  C2Sarray.push(C2S);
 
-  if(receivedPacket.packetID == 1){ //allows multiple tests without restarting server
-    lastPacketID = 0;
+  
+  if(receivedPacket.testID != currentTestID){ //make sure we are on the same test
+    C2Sarray = [];
+    C2Sarray.push(C2S);
+    console.log("new test started");
+    oldTestID = currentTestID;
+    currentTestID = receivedPacket.testID;
+    isSendingPacketsForTest = false;
+    if(!isSendingPacketsForTest){
+      sendPackets(receivedPacket.packetCount, receivedPacket, sender);
+    }
   }
 
-  console.log("packetID: " + receivedPacket.packetID);
-  console.log("lastPacketID: " + lastPacketID);
-
-  if(receivedPacket.packetID != lastPacketID + 1){
-
-
-
-
-    if(receivedPacket.packetID > lastPacketID + 1){
-      console.log("packet went missing");
-
-      var json = {
-        "type":"errorPacket",
-        "errorType": "missingPacket",
-        "packetID":receivedPacket.packetID,
-        "clientToServerPing":clientToServerPing,
-        "serverDatetime":datetime};
-    
-      server.send(JSON.stringify(json), sender.port, sender.address, (err) => {
-        console.log(`Message sent to ${sender.address}:${sender.port}`)
-      })
-
-      lastPacketID = receivedPacket.packetID;
-    }
-
-
-
-    else if(receivedPacket.packetID < lastPacketID + 1){
-      console.log("delayed packet received");
-      console.log("packetID: " + receivedPacket.packetID)
-      
-      var json = {
-        "type":"errorPacket",
-        "errorType": "delayedPacket",
-        "packetID":receivedPacket.packetID};
-    
-      server.send(JSON.stringify(json), sender.port, sender.address, (err) => {
-        console.log(`Message sent to ${sender.address}:${sender.port}`)
-      })
-    }
-
-
-
+  if(receivedPacket.testID == oldTestID){ //ignore old test packets
+    console.log("old test packet received");
     return;
   }
-
-  lastPacketID = receivedPacket.packetID;
-
+  
 
 
-  var json = {
-    "type":"serverToClientPingResponse",
-    "packetID":receivedPacket.packetID,
-    "clientToServerPing":clientToServerPing,
-    "serverDatetime":datetime};
 
-  server.send(JSON.stringify(json), sender.port, sender.address, (err) => {
-    console.log(`Message sent to ${sender.address}:${sender.port}`)
-  })
+
+  
+
+  
+
+
+
 });
+
+
+
+
+
+
+
+
+
+
 
 server.on('listening', () => {
   const address = server.address();
   console.log(`server listening ${address.address}:${address.port}`);
 });
+
+
+
+
+
 
 server.bind(41234);
 //Prints: server listening 0.0.0.0:41234
@@ -96,6 +94,44 @@ server.bind(41234);
 
 
 
+
+function delay(time){
+  return new Promise(resolve => {
+    setTimeout(resolve, time);
+  });
+}
+
+
+
+
+
+
+
+async function sendPackets(amount, receivedPacket, sender){
+
+  isSendingPacketsForTest = true;
+
+  for(var i = 0; i < amount; i++){
+
+    var datetime = (new Date()).getTime();
+
+    var json = {
+      "packetID":i+1,
+      "serverDatetime":datetime,
+      "C2STimings":C2Sarray};
+
+    server.send(JSON.stringify(json), sender.port, sender.address, (err) => {
+      console.log(`Message sent to ${sender.address}:${sender.port}`)
+    })
+    
+    
+    
+    console.log("----------------------------------");
+    await delay(1000);
+  } 
+
+  isSendingPacketsForTest = false;
+}
 
 
 

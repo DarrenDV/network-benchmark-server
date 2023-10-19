@@ -1,20 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\LT25WT\\OneDrive - ING\\Desktop\\Assignment\\network-benchmark-server\\Network-benchmark-client\\network-benchmark-client.csproj": {}
+    "D:\\Documents\\Development\\Other\\network-benchmark-server\\network-benchmark-client\\network-benchmark-client.csproj": {}
   },
   "projects": {
-    "C:\\Users\\LT25WT\\OneDrive - ING\\Desktop\\Assignment\\network-benchmark-server\\Network-benchmark-client\\network-benchmark-client.csproj": {
+    "D:\\Documents\\Development\\Other\\network-benchmark-server\\network-benchmark-client\\network-benchmark-client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\LT25WT\\OneDrive - ING\\Desktop\\Assignment\\network-benchmark-server\\Network-benchmark-client\\network-benchmark-client.csproj",
+        "projectUniqueName": "D:\\Documents\\Development\\Other\\network-benchmark-server\\network-benchmark-client\\network-benchmark-client.csproj",
         "projectName": "network-benchmark-client",
-        "projectPath": "C:\\Users\\LT25WT\\OneDrive - ING\\Desktop\\Assignment\\network-benchmark-server\\Network-benchmark-client\\network-benchmark-client.csproj",
-        "packagesPath": "C:\\Users\\LT25WT\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\LT25WT\\OneDrive - ING\\Desktop\\Assignment\\network-benchmark-server\\Network-benchmark-client\\obj\\",
+        "projectPath": "D:\\Documents\\Development\\Other\\network-benchmark-server\\network-benchmark-client\\network-benchmark-client.csproj",
+        "packagesPath": "C:\\Users\\darre_000\\.nuget\\packages\\",
+        "outputPath": "D:\\Documents\\Development\\Other\\network-benchmark-server\\network-benchmark-client\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
         "configFilePaths": [
-          "C:\\Users\\LT25WT\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\darre_000\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -55,7 +60,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.402\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.302\\RuntimeIdentifierGraph.json"
         }
       }
     }

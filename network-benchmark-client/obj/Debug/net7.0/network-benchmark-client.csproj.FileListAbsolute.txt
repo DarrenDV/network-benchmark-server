@@ -12,3 +12,18 @@ C:\Users\LT25WT\OneDrive - ING\Desktop\Assignment\network-benchmark-server\Netwo
 C:\Users\LT25WT\OneDrive - ING\Desktop\Assignment\network-benchmark-server\Network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.pdb
 C:\Users\LT25WT\OneDrive - ING\Desktop\Assignment\network-benchmark-server\Network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.genruntimeconfig.cache
 C:\Users\LT25WT\OneDrive - ING\Desktop\Assignment\network-benchmark-server\Network-benchmark-client\obj\Debug\net7.0\ref\network-benchmark-client.dll
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\bin\Debug\net7.0\network-benchmark-client.exe
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\bin\Debug\net7.0\network-benchmark-client.deps.json
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\bin\Debug\net7.0\network-benchmark-client.runtimeconfig.json
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\bin\Debug\net7.0\network-benchmark-client.dll
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\bin\Debug\net7.0\network-benchmark-client.pdb
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.csproj.AssemblyReference.cache
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.GeneratedMSBuildEditorConfig.editorconfig
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.AssemblyInfoInputs.cache
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.AssemblyInfo.cs
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.csproj.CoreCompileInputs.cache
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.dll
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\refint\network-benchmark-client.dll
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.pdb
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\network-benchmark-client.genruntimeconfig.cache
+D:\Documents\Development\Other\network-benchmark-server\network-benchmark-client\obj\Debug\net7.0\ref\network-benchmark-client.dll

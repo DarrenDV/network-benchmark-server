@@ -1,4 +1,5 @@
 ﻿
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -10,10 +11,12 @@ using System.Text.Json.Nodes;
 
 
 int packetCount = 0;
-int lastPacketID = 0;
 int packetsReceived = 0;
 UdpClient client = new UdpClient(3000);
 
+string testId = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"); //testID allows the server to differ between multiple tests
+
+Console.WriteLine(testId);
 
 Start();
 
@@ -74,6 +77,8 @@ void SendPacket(int packetNumber)
     long secondsSinceEpoch = (long)t.TotalMilliseconds;
 
     JsonNode jsonNode = new JsonObject();
+    jsonNode["testID"] = testId;
+    jsonNode["packetCount"] = packetCount;
     jsonNode["packetID"] = packetNumber;
     jsonNode["clientDatetime"] = secondsSinceEpoch;
     
@@ -104,8 +109,29 @@ void NetworkListenWorker()
         
         string receivedString = Encoding.ASCII.GetString(receiveBytes);
         
-        HandleReceivedPacket(receivedString);
+        TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
+        long secondsSinceEpoch = (long)t.TotalMilliseconds; 
+    
+        JsonNode? receivedJson = JsonNode.Parse(receivedString);
         
+        
+        //Get array from receivedJson?["C2STimings"]
+
+        List<int> c2sTimings = new List<int>();
+
+        for (int i = 0; i < receivedJson?["C2STimings"]?.AsArray().Count; i++) 
+        {
+            c2sTimings.Add(int.Parse(receivedJson?["C2STimings"]?.AsArray()[i]?.ToString() ?? string.Empty));
+        }
+        
+        double average = c2sTimings.Average();
+        
+        
+        long S2C = secondsSinceEpoch - long.Parse(receivedJson?["serverDatetime"]?.ToString() ?? string.Empty);
+        
+        Console.WriteLine($"packetID: {receivedJson?["packetID"]}, " +
+                          $"packet S2C: {S2C}, " +
+                          $"C2S average: {average}." );
         
         if(packetsReceived == packetCount)
         {
@@ -114,48 +140,3 @@ void NetworkListenWorker()
     }
 }
 
-void HandleReceivedPacket(string receivedPacket)
-{
-    TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
-    long secondsSinceEpoch = (long)t.TotalMilliseconds; 
-    
-    JsonNode? receivedJson = JsonNode.Parse(receivedPacket);
-    
-    
-    if(receivedJson?["type"]?.ToString() == "errorPacket")
-    {
-        
-        Console.WriteLine(receivedJson?["errorType"]?.ToString());
-        
-        switch (receivedJson?["errorType"]?.ToString())
-        {
-            case "missingPacket":
-                Console.WriteLine("A packet was lost!");
-
-                //packetsReceived += int.Parse(receivedJson?["packetID"]?.ToString()) - lastPacketID; 
-                Console.WriteLine(int.Parse(receivedJson?["packetID"]?.ToString() ?? string.Empty) - lastPacketID);
-                break;
-            case "delayedPacket":
-                Console.WriteLine("A packet was delayed!");
-                return;
-        }
-    }
-    
-    if(int.Parse(receivedJson?["packetID"]?.ToString() ?? string.Empty) != lastPacketID + 1)
-    {
-        Console.WriteLine("A packet was lost!");
-       // Console.WriteLine(int.Parse(receivedJson?["packetID"]?.ToString() ?? string.Empty) - lastPacketID);
-    }
-    
-    
-    lastPacketID = int.Parse(receivedJson?["packetID"]?.ToString() ?? string.Empty);
-    
-    long serverToClient = secondsSinceEpoch - long.Parse(receivedJson?["serverDatetime"]?.ToString() ?? string.Empty);
-        
-    long averagePing = (long.Parse(receivedJson?["clientToServerPing"]?.ToString() ?? string.Empty) + serverToClient) / 2;
-    
-        
-    Console.WriteLine("Received Packet!");
-    Console.WriteLine($"PacketID: {receivedJson?["packetID"]}, average ping: {averagePing}, C2S: {receivedJson?["clientToServerPing"]}, S2C: {serverToClient}");
-    
-}
