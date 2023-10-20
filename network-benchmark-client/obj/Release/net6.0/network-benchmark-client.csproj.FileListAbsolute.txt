@@ -1,0 +1,17 @@
+D:\Documents\Development\Other\network-benchmark-client\bin\Release\net6.0\network-benchmark-client.exe
+D:\Documents\Development\Other\network-benchmark-client\bin\Release\net6.0\network-benchmark-client.deps.json
+D:\Documents\Development\Other\network-benchmark-client\bin\Release\net6.0\network-benchmark-client.runtimeconfig.json
+D:\Documents\Development\Other\network-benchmark-client\bin\Release\net6.0\network-benchmark-client.dll
+D:\Documents\Development\Other\network-benchmark-client\bin\Release\net6.0\network-benchmark-client.pdb
+D:\Documents\Development\Other\network-benchmark-client\bin\Release\net6.0\CsvHelper.dll
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\network-benchmark-client.csproj.AssemblyReference.cache
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\network-benchmark-client.GeneratedMSBuildEditorConfig.editorconfig
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\network-benchmark-client.AssemblyInfoInputs.cache
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\network-benchmark-client.AssemblyInfo.cs
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\network-benchmark-client.csproj.CoreCompileInputs.cache
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\network-benchmark-client.csproj.CopyComplete
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\network-benchmark-client.dll
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\refint\network-benchmark-client.dll
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\network-benchmark-client.pdb
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\network-benchmark-client.genruntimeconfig.cache
+D:\Documents\Development\Other\network-benchmark-client\obj\Release\net6.0\ref\network-benchmark-client.dll
