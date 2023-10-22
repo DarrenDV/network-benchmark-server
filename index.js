@@ -4,6 +4,53 @@ const server = dgram.createSocket('udp4');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 
+const ntpClient = require('ntp-client');
+
+let ntpTime = null;
+
+// Function to fetch NTP time and store it
+function fetchNTPTime() {
+  ntpClient.getNetworkTime("pool.ntp.org", 123, (err, date) => {
+    if (err) {
+      console.error("Error fetching NTP time:", err);
+    } else {
+      ntpTime = date;
+      console.log("NTP time fetched:", ntpTime);
+    }
+  });
+}
+
+// Call the function to fetch NTP time when your server starts
+fetchNTPTime();
+
+// You can then use ntpTime in your calculations
+// For example, to calculate the current time with NTP offset in milliseconds
+function getCurrentTime() {
+  if (ntpTime) {
+    const now = new Date();
+    const offset = now - ntpTime;
+    return now - offset;
+  } else {
+    // Handle the case where NTP time hasn't been fetched yet
+    return Date.now();
+  }
+}
+
+// Example usage
+poep = getCurrentTime();
+console.log("Current time with NTP offset (milliseconds since 1/1/1970):", getCurrentTime());
+
+
+
+async function test(){
+  await delay(1000);
+  kak = getCurrentTime();
+  console.log("Current time with NTP offset (milliseconds since 1/1/1970):", getCurrentTime());
+  console.log("Time difference:", kak - poep);
+}
+
+test();
+
 var oldTestID;
 var currentTestID;
 var receivedPackets = 0;
