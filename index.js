@@ -7,6 +7,7 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const ntpClient = require('ntp-client');
 
 let ntpTime = null;
+let ntpGetTime = null;
 
 // Function to fetch NTP time and store it
 function fetchNTPTime() {
@@ -15,7 +16,9 @@ function fetchNTPTime() {
       console.error("Error fetching NTP time:", err);
     } else {
       ntpTime = date;
+      ntpGetTime = Date.now();
       console.log("NTP time fetched:", ntpTime);
+      console.log(ntpTime.getTime());
     }
   });
 }
@@ -27,29 +30,18 @@ fetchNTPTime();
 // For example, to calculate the current time with NTP offset in milliseconds
 function getCurrentTime() {
   if (ntpTime) {
-    const now = new Date();
-    const offset = now - ntpTime;
-    return now - offset;
+    // const now = new Date();
+    // const offset = now - ntpTime;
+    // return ntpTime.getTime() + offset;
+    const diff = Date.now() - ntpGetTime;
+    return ntpTime.getTime() + diff;
   } else {
     // Handle the case where NTP time hasn't been fetched yet
     return Date.now();
   }
 }
 
-// Example usage
-poep = getCurrentTime();
-console.log("Current time with NTP offset (milliseconds since 1/1/1970):", getCurrentTime());
 
-
-
-async function test(){
-  await delay(1000);
-  kak = getCurrentTime();
-  console.log("Current time with NTP offset (milliseconds since 1/1/1970):", getCurrentTime());
-  console.log("Time difference:", kak - poep);
-}
-
-test();
 
 var oldTestID;
 var currentTestID;
@@ -76,13 +68,16 @@ server.on('error', (err) => {
 
 
 server.on('message', (msg, sender) => {
-  var receivedPacket = JSON.parse(msg);
   
-
-  var datetime = (new Date()).getTime();
+  var datetime = getCurrentTime();
+  var receivedPacket = JSON.parse(msg);
   var C2S = datetime - receivedPacket.clientDatetime;
+  // console.log("--------------------------------------------------");
+  // console.log("clientDatetime: " + receivedPacket.clientDatetime);
+  // console.log(`datetime: ${datetime}`);
   C2Sarray.push(C2S);
 
+  //console.log(C2Sarray);
 
   clearTimeout(timer);
 
@@ -164,7 +159,7 @@ async function sendPackets(amount, receivedPacket, sender){
 
     var json = {
       "packetID":i+1,
-      "serverDatetime":datetime,
+      "serverDatetime":getCurrentTime(),
       "C2STimings":C2Sarray,
       "C2SSuccessRate":currentPacketLoss
     };
