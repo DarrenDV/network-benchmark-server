@@ -1,13 +1,23 @@
-console.log('server starting....');
 const dgram = require('node:dgram');
-const server = dgram.createSocket('udp4');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-
-
 const ntpClient = require('ntp-client');
+
+const server = dgram.createSocket('udp4');
 
 let ntpTime = null;
 let ntpGetTime = null;
+
+var oldTestID;
+var currentTestID;
+var receivedPackets = 0;
+var currentPacketLoss = 0;
+
+const TIMEOUT_TIME = 10000; //ms
+let timer;
+
+var C2Sarray = [];
+var incomingPacketData = [];
+
 
 // Function to fetch NTP time and store it
 function fetchNTPTime() {
@@ -23,16 +33,8 @@ function fetchNTPTime() {
   });
 }
 
-// Call the function to fetch NTP time when your server starts
-fetchNTPTime();
-
-// You can then use ntpTime in your calculations
-// For example, to calculate the current time with NTP offset in milliseconds
 function getCurrentTime() {
   if (ntpTime) {
-    // const now = new Date();
-    // const offset = now - ntpTime;
-    // return ntpTime.getTime() + offset;
     const diff = Date.now() - ntpGetTime;
     return ntpTime.getTime() + diff;
   } else {
@@ -41,80 +43,36 @@ function getCurrentTime() {
   }
 }
 
-
-
-var oldTestID;
-var currentTestID;
-var receivedPackets = 0;
-var currentPacketLoss = 0;
-
-const TIMEOUT_TIME = 10000; //ms
-let timer;
-
-var isSendingPacketsForTest = false;
-
-var C2Sarray = [];
-var incomingPacketData = [];
-
-
-
-
-
-server.on('error', (err) => {
+function onServerError(err){
   console.error(`server error:\n${err.stack}`);
   server.close();
-});
+}
 
-
-
-server.on('message', (msg, sender) => {
-  
+function onMessage(msg, sender){
   var datetime = getCurrentTime();
   var receivedPacket = JSON.parse(msg);
   var C2S = datetime - receivedPacket.clientDatetime;
-  // console.log("--------------------------------------------------");
-  // console.log("clientDatetime: " + receivedPacket.clientDatetime);
-  // console.log(`datetime: ${datetime}`);
-  C2Sarray.push(C2S);
-
-  //console.log(C2Sarray);
-
+  
+  OnPacketReceived(receivedPacket, C2S);
+  
   clearTimeout(timer);
-
-
-  receivedPackets++;
-
-  currentPacketLoss = (receivedPackets / receivedPacket.packetID) * 100;
-
   
   if(receivedPacket.testID != currentTestID){ //make sure we are on the same test
     console.log("new test started");
     resetData();
+    OnPacketReceived(receivedPacket, C2S);
     
-    C2Sarray.push(C2S);
-    receivedPackets++;
-    currentPacketLoss = (receivedPackets / receivedPacket.packetID) * 100;
     oldTestID = currentTestID;
     currentTestID = receivedPacket.testID;
-    isSendingPacketsForTest = false;
-    if(!isSendingPacketsForTest){
-      sendPackets(receivedPacket.packetCount, receivedPacket, sender);
-    }
+    
+    sendPackets(receivedPacket.packetCount, sender);
   }
-
+  
   if(receivedPacket.testID == oldTestID){ //ignore old test packets
     console.log("old test packet received");
     return;
   }
   
-  //Handle incoming packet data
-  incomingPacketData.push({
-    packetID: receivedPacket.packetID,
-    packetCount: receivedPacket.packetCount,
-    C2S: C2S,
-    currentPacketLoss: currentPacketLoss
-  })
-
   //Check if we received all packets
   if(receivedPackets >= receivedPacket.packetCount){
     clearTimeout(timer);
@@ -127,18 +85,27 @@ server.on('message', (msg, sender) => {
       resetData();
     }, TIMEOUT_TIME);
   }
-});
+}
 
+function OnPacketReceived(receivedPacket, C2S){
+  receivedPackets++;
+  currentPacketLoss = (receivedPackets / receivedPacket.packetID) * 100;
+  C2Sarray.push(C2S);
+  
+  //Handle incoming packet data
+  incomingPacketData.push({
+    packetID: receivedPacket.packetID,
+    packetCount: receivedPacket.packetCount,
+    C2S: C2S,
+    currentPacketLoss: currentPacketLoss
+  })
+  
+}
 
-server.on('listening', () => {
+function OnListen(){
   const address = server.address();
   console.log(`server listening ${address.address}:${address.port}`);
-});
-
-
-server.bind(41234);
-//Prints: server listening 0.0.0.0:41234
-
+}
 
 function delay(time){
   return new Promise(resolve => {
@@ -146,34 +113,27 @@ function delay(time){
   });
 }
 
-
-async function sendPackets(amount, receivedPacket, sender){
-
+async function sendPackets(amount, sender){
+  
   isSendingPacketsForTest = true;
-
+  
   for(var i = 0; i < amount; i++){
     
-
-
-    var datetime = (new Date()).getTime();
-
     var json = {
       "packetID":i+1,
       "serverDatetime":getCurrentTime(),
       "C2STimings":C2Sarray,
       "C2SSuccessRate":currentPacketLoss
     };
-
+    
     server.send(JSON.stringify(json), sender.port, sender.address, (err) => {
       console.log(`Message sent to ${sender.address}:${sender.port}`)
     })
     
-    
-    
     console.log("----------------------------------");
     await delay(16);
   } 
-
+  
   isSendingPacketsForTest = false;
 }
 
@@ -185,13 +145,13 @@ function saveData(testID){
       { id: 'packetCount', title: 'PacketCount' },
       { id: 'C2S', title: 'C2S' },
       { id: 'currentPacketLoss', title: 'CurrentPacketLoss' },
-
+      
     ],
   });
-
+  
   csvWriter
-    .writeRecords(incomingPacketData)
-    .then(() => console.log('The CSV file was written successfully'));
+  .writeRecords(incomingPacketData)
+  .then(() => console.log('The CSV file was written successfully'));
 }
 
 function resetData(){
@@ -201,3 +161,21 @@ function resetData(){
   currentPacketLoss = 100;
   incomingPacketData = [];
 }
+
+
+
+
+
+console.log('server starting....');
+
+
+fetchNTPTime();
+
+server.on('error', onServerError);
+
+server.on('listening', OnListen)
+
+server.on('message', onMessage);
+
+server.bind(41234);
+//Prints: server listening 0.0.0.0:41234

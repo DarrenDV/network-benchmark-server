@@ -1,6 +1,6 @@
 public class IncomingPacketData
 {
-    public IncomingPacketData(string? packetNumber, string packetCount, string s2C, string s2CSuccessRate, string averageC2STime, string c2SSuccessRate)
+    public IncomingPacketData(string? packetNumber, string packetCount, string s2C, string s2CSuccessRate, string averageC2STime, string c2SSuccessRate, string averagePing, string packetSize)
     {
         PacketNumber = packetNumber;
         PacketCount = packetCount;
@@ -8,6 +8,8 @@ public class IncomingPacketData
         S2CSuccessRate = s2CSuccessRate;
         AverageC2STime = averageC2STime;
         C2SSuccessRate = c2SSuccessRate;
+        AveragePing = averagePing;
+        PacketSize = packetSize;
     }
 
     public string? PacketNumber { get; set; }
@@ -16,4 +18,6 @@ public class IncomingPacketData
     public string S2CSuccessRate { get; set; }
     public string AverageC2STime { get; set; }
     public string C2SSuccessRate { get; set; }
+    public string AveragePing { get; set; }
+    public string PacketSize { get; set; }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 using CsvHelper;
@@ -16,39 +15,25 @@ const int serverPort = 41234;
 
 
 
+List<IncomingPacketData> incomingPacketDatas = new ();
 
-
-
-
-var incomingPacketDatas = new List<IncomingPacketData>();
-
-int packetCount = 0;
+int packetCount;
 int packetsReceived = 0;
-int timeout = 10000; //ms
-UdpClient client = new UdpClient(3000);
+const int timeout = 10000; //ms
 
+
+
+
+
+UdpClient client = new (3000);
 
 NtpClient ntpClient = NtpClient.Default;
 
 NtpClock clock = ntpClient.Query();
 DateTime clockTime = clock.UtcNow.UtcDateTime;
-DateTime QueryTime = DateTime.UtcNow;
+DateTime queryTime = DateTime.UtcNow;
 
-
-//string tets2 = clock.UtcNow.UtcDateTime.ToString("yyyyMMddHHmmssfff");
-//string testId = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"); //testID allows the server to differ between multiple tests
 string testId = clock.UtcNow.UtcDateTime.ToString("yyyyMMddHHmmssfff");
-//DateTimeOffset now = DateTimeOffset.UtcNow;
-
-//Console.WriteLine(testId);
-//Console.WriteLine(clock.UtcNow.UtcDateTime.ToString("yyyyMMddHHmmssfff"));
-
-//Thread.Sleep(1000);
-
-//Console.WriteLine(clock.UtcNow.UtcDateTime.ToString("yyyyMMddHHmmssfff"));
-
-//Console.ReadLine();
-
 
 Start();
 return;
@@ -56,26 +41,8 @@ return;
 
 
 
-
-
-
-
 void Start()
 {
-
-    // while (true)
-    // {
-    //     TimeSpan t = clock.UtcNow.UtcDateTime - new DateTime(1970, 1, 1);
-    //     long secondsSinceEpoch = (long)t.TotalMilliseconds; //Calculate time as first thing so it is as accurate as possible
-    //
-    //     if (secondsSinceEpoch % 1000 == 0)
-    //     {
-    //         Console.WriteLine(secondsSinceEpoch);
-    //         
-    //     }
-    //     
-    // }
-    
     Console.WriteLine("How many packets?");
     packetCount = int.Parse(Console.ReadLine() ?? string.Empty);
 
@@ -83,11 +50,11 @@ void Start()
     {
         client.Connect(serverIp, serverPort);
 
-        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        Thread networkListenThread = new Thread(() => NetworkListenWorker(cancellationTokenSource.Token));
+        CancellationTokenSource cancellationTokenSource = new ();
+        Thread networkListenThread = new (() => NetworkListenWorker(cancellationTokenSource.Token));
         networkListenThread.Start();
 
-        Thread networkSendThread = new Thread(NetworkSendWorker);
+        Thread networkSendThread = new (NetworkSendWorker);
         networkSendThread.Start();
 
         networkListenThread.Join();
@@ -115,12 +82,6 @@ void SendPacket(int packetNumber)
     jsonNode["testID"] = testId;
     jsonNode["packetCount"] = packetCount;
     jsonNode["packetID"] = packetNumber;
-
-    // TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
-    // long secondsSinceEpoch = (long)t.TotalMilliseconds;
-
-    TimeSpan t = clock.UtcNow.UtcDateTime - new DateTime(1970, 1, 1);
-    long secondsSinceEpoch = (long)t.TotalMilliseconds;
     
     jsonNode["clientDatetime"] = SecondsSinceEpoch();
 
@@ -133,12 +94,11 @@ void SendPacket(int packetNumber)
 
 void NetworkListenWorker(CancellationToken cancellationToken)
 {
-    List<int> S2CTimings = new List<int>();
-    double C2SAverage = 0;
+    List<int> S2CTimings = new ();
     while (packetsReceived < packetCount)
     {
 
-        byte[]? receiveBytes = null;
+        byte[]? receiveBytes;
 
         try
         {
@@ -152,7 +112,7 @@ void NetworkListenWorker(CancellationToken cancellationToken)
             break;
         }
 
-        if (receiveBytes.Length == 0)
+        if (receiveBytes is { Length: 0 })
         {
             Console.WriteLine("Received nothing");
             continue;
@@ -162,42 +122,44 @@ void NetworkListenWorker(CancellationToken cancellationToken)
         packetsReceived++;
 
         string receivedString = Encoding.ASCII.GetString(receiveBytes);
-
-
+        
+        
+        
 
         //Process received data here
-        // TimeSpan t = clock.UtcNow.UtcDateTime - new DateTime(1970, 1, 1);
-        // long secondsSinceEpoch = (long)t.TotalMilliseconds; //Calculate time as first thing so it is as accurate as possible
-        long _secondsSinceEpoch = SecondsSinceEpoch();
+        long secondsSinceEpoch = SecondsSinceEpoch(); //Get packet receive time
 
         JsonNode? receivedJson = JsonNode.Parse(receivedString);
 
 
-        int packetID = int.Parse(receivedJson?["packetID"]?.ToString() ?? string.Empty);
+        int packetId = int.Parse(receivedJson?["packetID"]?.ToString() ?? string.Empty);
 
         //Calculate average Client to Server (C2S) timing
-        List<int> c2STimings = new List<int>();
+        List<int> c2STimings = new ();
         for (int i = 0; i < receivedJson?["C2STimings"]?.AsArray().Count; i++)
         {
             //Console.WriteLine(i);
             c2STimings.Add(int.Parse(receivedJson?["C2STimings"]?.AsArray()[i]?.ToString() ?? string.Empty));
         }
-        C2SAverage = c2STimings.Average();
+        double C2SAverage = c2STimings.Average();
 
         //Calculate Server to Client (S2C) timing
-        long S2C = _secondsSinceEpoch - long.Parse(receivedJson?["serverDatetime"]?.ToString() ?? string.Empty);
+        long S2C = secondsSinceEpoch - long.Parse(receivedJson?["serverDatetime"]?.ToString() ?? string.Empty);
         S2CTimings.Add((int)S2C);
 
         //Get packet loss rates
         float C2SSuccessRate = float.Parse(receivedJson?["C2SSuccessRate"]?.ToString() ?? string.Empty);
-        float S2CSuccessRate = (float)packetsReceived / (float)packetID * 100f;
+        float S2CSuccessRate = packetsReceived / (float)packetId * 100f;
         
+        double averagePing = (S2CTimings.Average() + C2SAverage) / 2f;
 
         Console.WriteLine($"packetID: {receivedJson?["packetID"]}, " +
                           $"packet S2C: {S2C} ms, " +
                           $"S2C success rate: {S2CSuccessRate:0.000}%, " +
                           $"C2S average: {C2SAverage:0.000} ms, " +
-                          $"C2S success rate: {C2SSuccessRate:0.000}%.");
+                          $"C2S success rate: {C2SSuccessRate:0.000}%, " +
+                          $"Average ping: {averagePing:0.000} ms, " + 
+                          $"Packet size: {receiveBytes.Length} bytes");
 
 
 
@@ -208,17 +170,18 @@ void NetworkListenWorker(CancellationToken cancellationToken)
                 S2C.ToString(),
                 S2CSuccessRate.ToString(CultureInfo.InvariantCulture),
                 C2SAverage.ToString(CultureInfo.InvariantCulture),
-                C2SSuccessRate.ToString(CultureInfo.InvariantCulture)
+                C2SSuccessRate.ToString(CultureInfo.InvariantCulture),
+                averagePing.ToString(CultureInfo.InvariantCulture),
+                receiveBytes.Length.ToString()
                 )
             );
     }
     
-    Console.WriteLine(S2CTimings.Average());
-    Console.WriteLine((S2CTimings.Average() + C2SAverage) / 2);
+
     
     //Write to CSV
-    using var writer = new StreamWriter($"{testId}-client.csv");
-    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+    using StreamWriter writer = new($"{testId}-client.csv");
+    using (CsvWriter csv = new (writer, CultureInfo.InvariantCulture))
     {
         csv.WriteRecords(incomingPacketDatas);
     }
@@ -227,30 +190,28 @@ void NetworkListenWorker(CancellationToken cancellationToken)
 
 byte[]? ReceiveWithTimeout(CancellationToken cancellationToken)
 {
-    byte[]? receiveBytes = null;
+    using CancellationTokenRegistration registration = cancellationToken.Register(() => client.Close());
+    
+    byte[]? receiveBytes;
 
-    using (CancellationTokenRegistration registration = cancellationToken.Register(() => client.Close()))
+    if (client.Client.Poll(timeout * 1000, SelectMode.SelectRead))
     {
-        int timeoutMilliseconds = timeout; // Adjust the timeout as needed
-
-        if (client.Client.Poll(timeoutMilliseconds * 1000, SelectMode.SelectRead))
-        {
-            IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            receiveBytes = client.Receive(ref remoteEndPoint);
-        }
-        else
-        {
-            cancellationToken.ThrowIfCancellationRequested(); // Check for cancellation before throwing
-            throw new OperationCanceledException();
-        }
+        IPEndPoint remoteEndPoint = new (IPAddress.Any, 0);
+        receiveBytes = client.Receive(ref remoteEndPoint);
+    }
+    else
+    {
+        cancellationToken.ThrowIfCancellationRequested(); // Check for cancellation before throwing
+        throw new OperationCanceledException();
     }
 
     return receiveBytes;
 }
 
+//Calculate the amount of milliseconds since 1/1/1970 keeping the NTP time in mind
 long SecondsSinceEpoch()
 {
-    TimeSpan offset = DateTime.UtcNow - QueryTime;
+    TimeSpan offset = DateTime.UtcNow - queryTime;
     DateTime adjustedQueryTime = clockTime + offset;
     TimeSpan t = adjustedQueryTime - new DateTime(1970, 1, 1);
     long secondsSinceEpoch = (long)t.TotalMilliseconds;
