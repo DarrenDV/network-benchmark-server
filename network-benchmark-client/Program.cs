@@ -8,7 +8,7 @@ using GuerrillaNtp;
 
 
 //Script set variables
-const string serverIp = "127.0.0.1";
+const string serverIp = "213.93.255.165";
 const int serverPort = 41234;
 
 
@@ -159,7 +159,8 @@ void NetworkListenWorker(CancellationToken cancellationToken)
                           $"C2S average: {C2SAverage:0.000} ms, " +
                           $"C2S success rate: {C2SSuccessRate:0.000}%, " +
                           $"Average ping: {averagePing:0.000} ms, " + 
-                          $"Packet size: {receiveBytes.Length} bytes");
+                          $"Packet size: {receiveBytes.Length} bytes, " +
+                          $"Capable speed: {receiveBytes.Length / (averagePing / 1000f) / 1024f / 1024f:0.000} MB/s");
 
 
 
