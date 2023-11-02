@@ -31,6 +31,19 @@
           }
         }
       },
+      "ManagedNativeWifi/2.5.0": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/ManagedNativeWifi.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/ManagedNativeWifi.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "System.Memory/4.5.5": {
         "type": "package",
         "compile": {
@@ -84,6 +97,21 @@
         "lib/netstandard2.0/GuerrillaNtp.xml"
       ]
     },
+    "ManagedNativeWifi/2.5.0": {
+      "sha512": "wJb3A5bXKOduJjUS60cOZ4+B7fG2oyEX/VlKziyhHiqppFQ2GbBE5NvcrJ3IrUofvpKqpFeGXmhatrbUP0qklg==",
+      "type": "package",
+      "path": "managednativewifi/2.5.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net6.0/ManagedNativeWifi.dll",
+        "lib/net6.0/ManagedNativeWifi.xml",
+        "lib/netstandard2.0/ManagedNativeWifi.dll",
+        "lib/netstandard2.0/ManagedNativeWifi.xml",
+        "managednativewifi.2.5.0.nupkg.sha512",
+        "managednativewifi.nuspec"
+      ]
+    },
     "System.Memory/4.5.5": {
       "sha512": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw==",
       "type": "package",
@@ -111,7 +139,8 @@
   "projectFileDependencyGroups": {
     "net6.0": [
       "CsvHelper >= 30.0.1",
-      "GuerrillaNtp >= 3.1.0"
+      "GuerrillaNtp >= 3.1.0",
+      "ManagedNativeWifi >= 2.5.0"
     ]
   },
   "packageFolders": {
@@ -160,6 +189,10 @@
           "GuerrillaNtp": {
             "target": "Package",
             "version": "[3.1.0, )"
+          },
+          "ManagedNativeWifi": {
+            "target": "Package",
+            "version": "[2.5.0, )"
           }
         },
         "imports": [

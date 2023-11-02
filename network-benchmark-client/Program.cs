@@ -8,7 +8,7 @@ using GuerrillaNtp;
 
 
 //Script set variables
-const string serverIp = "213.93.255.165";
+const string serverIp = "127.0.0.1";
 const int serverPort = 41234;
 
 
@@ -20,6 +20,9 @@ List<IncomingPacketData> incomingPacketDatas = new ();
 int packetCount;
 int packetsReceived = 0;
 const int timeout = 10000; //ms
+
+bool isRunning = false;
+string networkStrength = "0%";
 
 
 
@@ -36,7 +39,9 @@ DateTime queryTime = DateTime.UtcNow;
 string testId = clock.UtcNow.UtcDateTime.ToString("yyyyMMddHHmmssfff");
 
 Start();
+
 return;
+
 
 
 
@@ -50,15 +55,21 @@ void Start()
     {
         client.Connect(serverIp, serverPort);
 
+        isRunning = true;
+        
         CancellationTokenSource cancellationTokenSource = new ();
         Thread networkListenThread = new (() => NetworkListenWorker(cancellationTokenSource.Token));
         networkListenThread.Start();
 
         Thread networkSendThread = new (NetworkSendWorker);
         networkSendThread.Start();
+        
+        Thread networkStrengthThread = new (NetworkStrengthWorker);
+        networkStrengthThread.Start();
 
         networkListenThread.Join();
         networkSendThread.Join();
+        networkStrengthThread.Join();
     }
     catch (Exception e)
     {
@@ -91,7 +102,6 @@ void SendPacket(int packetNumber)
     client.Send(sendBytes, sendBytes.Length);
 }
 
-
 void NetworkListenWorker(CancellationToken cancellationToken)
 {
     List<int> S2CTimings = new ();
@@ -117,13 +127,10 @@ void NetworkListenWorker(CancellationToken cancellationToken)
             Console.WriteLine("Received nothing");
             continue;
         }
-
-
+        
         packetsReceived++;
 
         string receivedString = Encoding.ASCII.GetString(receiveBytes);
-        
-        
         
 
         //Process received data here
@@ -160,10 +167,9 @@ void NetworkListenWorker(CancellationToken cancellationToken)
                           $"C2S success rate: {C2SSuccessRate:0.000}%, " +
                           $"Average ping: {averagePing:0.000} ms, " + 
                           $"Packet size: {receiveBytes.Length} bytes, " +
-                          $"Capable speed: {receiveBytes.Length / (averagePing / 1000f) / 1024f / 1024f:0.000} MB/s");
-
-
-
+                          $"Capable speed: {receiveBytes.Length / (averagePing / 1000f) / 1024f / 1024f:0.000} MB/s, " +
+                          $"Network strength: {networkStrength}");
+        
         incomingPacketDatas.Add(
             new IncomingPacketData(
                 receivedJson?["packetID"]?.ToString(),
@@ -173,12 +179,13 @@ void NetworkListenWorker(CancellationToken cancellationToken)
                 C2SAverage.ToString(CultureInfo.InvariantCulture),
                 C2SSuccessRate.ToString(CultureInfo.InvariantCulture),
                 averagePing.ToString(CultureInfo.InvariantCulture),
-                receiveBytes.Length.ToString()
+                receiveBytes.Length.ToString(),
+                networkStrength
                 )
             );
     }
     
-
+    isRunning = false;
     
     //Write to CSV
     using StreamWriter writer = new($"{testId}-client.csv");
@@ -187,6 +194,33 @@ void NetworkListenWorker(CancellationToken cancellationToken)
         csv.WriteRecords(incomingPacketDatas);
     }
 
+}
+
+void NetworkStrengthWorker()
+{
+    while (isRunning)
+    {
+        Console.WriteLine("Getting network strength");
+        SignalStrength();
+        Thread.Sleep(2500);
+    }
+}
+
+void SignalStrength()
+{
+    System.Diagnostics.Process process = new ();
+    process.StartInfo.FileName = "netsh.exe";
+    process.StartInfo.Arguments = "wlan show interfaces";
+    process.StartInfo.UseShellExecute = false;
+    process.StartInfo.RedirectStandardOutput = true;
+    process.Start();
+    
+    string output = process.StandardOutput.ReadToEnd();
+    output = output[output.IndexOf("Signal", StringComparison.Ordinal)..];
+    output = output[output.IndexOf(":", StringComparison.Ordinal)..];
+    networkStrength = output.Substring(2, output.IndexOf("\n", StringComparison.Ordinal)).Trim();
+    
+    process.WaitForExit();
 }
 
 byte[]? ReceiveWithTimeout(CancellationToken cancellationToken)

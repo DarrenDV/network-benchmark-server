@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "wkh8tIjZDGctur8pO0yJqygdgsjfAcYexAELHUKaPpIrS1XnDtYDwOVOy9rHOkuwZ+rD+7MkIKCXg5pOioBpXg==",
+  "dgSpecHash": "nVa6vV/J31so57c4LAYhllwvLrXLAR0ysckg1Do4YW+Y3gijjtJCxqZCIHM/i28/qHjQTndttKntaxsr9KYo+Q==",
   "success": true,
   "projectFilePath": "C:\\Users\\LT25WT\\OneDrive - ING\\Desktop\\Assignment\\network-benchmark-server\\Network-benchmark-client\\network-benchmark-client.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\LT25WT\\.nuget\\packages\\csvhelper\\30.0.1\\csvhelper.30.0.1.nupkg.sha512",
     "C:\\Users\\LT25WT\\.nuget\\packages\\guerrillantp\\3.1.0\\guerrillantp.3.1.0.nupkg.sha512",
+    "C:\\Users\\LT25WT\\.nuget\\packages\\managednativewifi\\2.5.0\\managednativewifi.2.5.0.nupkg.sha512",
     "C:\\Users\\LT25WT\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512"
   ],
   "logs": []

@@ -131,7 +131,7 @@ async function sendPackets(amount, sender){
     })
     
     console.log("----------------------------------");
-    await delay(16);
+    await delay(14);
   } 
   
   isSendingPacketsForTest = false;
